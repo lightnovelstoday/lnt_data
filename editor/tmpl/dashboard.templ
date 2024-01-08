@@ -1,0 +1,13 @@
+package tmpl
+
+templ Dashboard(data ResponseData) {
+    @page("LN.t Series Editor") {
+        @navbar(data)
+        <h1>Dashboard</h1>
+        <ul>
+            for _, file := range data.Files {
+                <li><a href={ templ.URL("/"+ file.Key +"/series") }>{ file.Name }</a></li>
+            }
+        </ul>
+    }
+}

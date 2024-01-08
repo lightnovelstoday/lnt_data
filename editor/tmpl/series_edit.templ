@@ -1,0 +1,220 @@
+package tmpl
+
+import 	"github.com/acsellers/ln_shared/data"
+
+templ SeriesEdit(rd ResponseData) {
+    @page("LN.t Series Editor") {
+        @navbar(rd)
+        @seriesVolumeList(rd)
+        @seriesEditor(rd.Series, rd.Key)
+        <script>
+            var mainGenres = new SlimSelect({select: "#main_genres"})
+            var settings = new SlimSelect({select: "#setting"})
+            var themes = new SlimSelect({select: "#themes"})
+            var ageLevel = new SlimSelect({select: "#age_level"})
+            var tags = new SlimSelect({select: "#tags"})
+            
+        </script>
+    }
+}
+templ seriesVolumeList(rd ResponseData) {
+    <div class="volume-list">
+        <div class="surface-ground px-1 py-2">
+            <div class="surface-card p-4 shadow-2 border-round p-fluid">
+                <h2 class="mb-2 my-1">Volumes</h2>
+                
+                for _, volume := range rd.Series.Volumes {
+                    <div class="grid align-items-center h-5rem">
+                        <div class="col-8 grid align-items-center">
+                            if volume.LocalImage != "" {
+                                <img src={ volume.LocalImage } class="h-4rem img-fluid" alt={ volume.Title } />
+                            } else {
+                                <img src="/img/unknown.jpg" class="h-4rem img-fluid" alt={ volume.Title } />
+                            }
+                            <span class="mx-3">{ itoa(volume.Order) }</span>
+                            <a href={ templ.URL("/"+ rd.Key +"/series/"+ volume.SeriesID + "/volumes/" + volume.ID) }>{ volume.Title }</a>
+                        </div>
+                        <div class="col-2">
+                            <span>Print: { volume.PrintRelease }</span>
+                        </div>
+                        <div class="col-2">
+                            <span>Digital: { volume.DigitalRelease }</span>
+                        </div>
+                    </div>
+                }
+                <div class="grid">
+                    <div class="col-12">
+                        <a href={ templ.URL("/" + rd.Key + "/series/" + rd.Series.ID + "/volumes/new") } class="btn btn-primary">New Volume</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+templ seriesEditor(series *data.Series, key string) {
+    <div class="series-page">  
+        <form action={ templ.URL("/" + key + "/series/" + series.ID) } method="POST">
+            <div class="surface-ground px-1 py-2">
+                <div class="surface-card p-4 shadow-2 border-round p-fluid">
+                    <h2 class="mb-2 my-1">Series Data</h2>
+                    <div class="grid formgrid p-fluid">
+                        <div class="mb-2 col-10">
+                            <div class="field">
+                            <label for="title">Title</label>
+                            <input type="text" name="title" id="title" value={ series.Title } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-2">
+                            <div class="field">
+                                <label for="type">Type</label>
+                                @selector(series.Type, types, "type")
+                            </div>
+                        </div>
+                        <div class="mb-2 col-4">
+                            <div class="field">
+                            <label for="authors">Authors</label>
+                            <input type="text" name="authors" id="authors" value={ join(series.Authors) } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-4">
+                            <div class="field">
+                            <label for="illustrators">Illustrators</label>
+                            <input type="text" name="illustrators" id="illustrators" value={ join(series.Illustrators) } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-4">
+                            <div class="field">
+                            <label for="translators">Translators</label>
+                            <input type="text" name="translators" id="translators" value={ join(series.Translators) } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-4">
+                            <div class="field">
+                                <label for="original_language">Original Language</label>
+                                @selector(series.OriginalLanguage, originalLangs, "original_language")
+                            </div>
+                        </div>
+                        <div class="mb-2 col-4">
+                            <div class="field">
+                                <label for="publisher">Publisher</label>
+                                @selector(series.Publisher, publishers, "publisher")
+                            </div>
+                        </div>
+                        <div class="mb-2 col-4">
+                            <div class="field">
+                                <label for="status">Status</label>
+                                @selector(series.Status, statuses, "status")
+                            </div>
+                        </div>
+                        <div class="mb-2 col-12">
+                            <div class="field">
+                            <label for="description">Description</label>
+                            <textarea name="description" id="description" rows="8">{ series.Description }</textarea>
+                            </div>
+                        </div>
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                            <label for="image">Image</label>
+                            <input type="text" name="image" id="image" value={ series.Image } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                                <label for="website">Website</label>
+                                <input type="text" name="website" id="website" value={ series.Website } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-12">
+                            <div class="field">
+                                <label for="auto_genres">Auto Genres</label>
+                                <input type="text" name="auto_genres" id="auto_genres" value={ join(series.AutoGenres) } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                                <label for="main_genres">Main Genres</label>
+                                <select name="main_genres" id="main_genres" multiple>
+                                    <option value="Action">Action</option>
+                                    <option value="Adventure">Adventure</option>
+                                    <option value="Artbook">Artbook</option>
+                                    <option value="Yaoi">Boys Love (Yaoi)</option>
+                                    <option value="Childrens Book">Childrens Book</option>
+                                    <option value="Comedy">Comedy</option>
+                                    <option value="Drama">Drama</option>
+                                    <option value="Dystopian">Dystopian</option>
+                                    <option value="Erotica">Erotica</option>
+                                    <option value="Fantasy">Fantasy</option>
+                                    <option value="Giant Robot">Giant Robot</option>
+                                    <option value="Harem">Harem</option>
+                                    <option value="Historical Fiction">Historical Fiction</option>
+                                    <option value="Horror">Horror</option>
+                                    <option value="Isekai">Isekai</option>
+                                    <option value="Mystery">Mystery</option>
+                                    <option value="Nonfiction">Nonfiction</option>
+                                    <option value="Reference Book">Reference Book</option>
+                                    <option value="Romance">Romance</option>
+                                    <option value="Science Fiction">Science Fiction</option>
+                                    <option value="Slice of Life">Slice of Life</option>
+                                    <option value="Sports">Sports</option>
+                                    <option value="Shounen">Shounen (Boys)</option>
+                                    <option value="Shoujo">Shoujo (Young Women)</option>
+                                    <option value="Seinen">Seinen (Young Men)</option>
+                                    <option value="Josei">Josei (Girls)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                                <label for="setting">Setting</label>
+                                <select name="setting" id="setting" multiple>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                                <label for="themes">Themes</label>
+                                <select name="themes" id="themes" multiple>
+                                </select>
+                            </div>
+                        </div>
+                        
+
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                                <label for="age_level">Maturity Level/Content Warnings</label>
+                                <select name="age_level" id="age_level" multiple>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-2 col-12">
+                            <div class="field">
+                                <label for="tags">Tags</label>
+                                <select name="tags" id="tags" multiple>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                                <label for="nu_link">Novel Updates Link</label>
+                                <input type="text" name="nu_link" id="nu_link" value={ series.NULink } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-6">
+                            <div class="field">
+                                <label for="md_link">MangaDex Link</label>
+                                <input type="text" name="md_link" id="md_link" value={ series.MDLink } />
+                            </div>
+                        </div>
+                        <div class="mb-2 col-12">
+                            <div class="px-3 flex justify-content-between">
+                                <input type="submit" class="btn btn-primary" value="Update Series" />
+                                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Delete Series</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+}

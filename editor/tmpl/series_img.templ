@@ -1,0 +1,40 @@
+package tmpl
+
+templ SeriesImg(data ResponseData) {
+    @page("LN.t Series Editor") {
+        @navbar(data)
+        for index, item := range data.SeriesList {
+            <div class="grid my-1">
+                <div class={"col-12", "h-2rem", evenodd(index), "grid", "justify-content-between"}>
+                    <a class="mx-2" href={ templ.URL("/"+data.Key+"/series/"+item.ID) }>{ item.Title }</a>
+                    <span class={"mx-2", "lnt-tag", "lnt-tag-sm", "w-6rem", "text-white", "bg-"+item.Type }>
+                        { item.Type }
+                    </span>
+                </div>
+                <div class="col-3">
+                    <a href={ templ.URL("/"+data.Key+"/series/"+item.ID) }>
+                        <img src={ item.LocalImage } class="h-20rem img-fluid border-blue-500 border-3" alt={ item.Title } />
+                    </a>
+                </div>
+                for _, volume :=  range item.Volumes {
+                    <div class="col-3">
+                        <a href={ templ.URL("/"+ data.Key+"/series/"+item.ID+"/volumes/"+volume.ID) }>
+                            <img src={ volume.LocalImage } class="h-20rem img-fluid border-green-500 border-3" alt={ volume.Title } />
+                        </a>
+                    </div>
+                }
+            </div>
+            <hr />
+        }
+        if data.Page > 1 {
+            <a href={ templ.URL("/"+data.Key+"/seriesimg/"+itoa(data.Page-1)) }>Previous</a>
+        } else {
+            <a disabled>Previous</a>
+        }
+        if data.Page < data.Total {
+            <a href={ templ.URL("/"+data.Key+"/seriesimg/"+itoa(data.Page+1)) }>Next</a>
+        } else {
+            <a disabled>Next</a>
+        }
+    }
+}

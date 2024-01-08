@@ -1,0 +1,45 @@
+package tmpl
+
+templ navbar(data ResponseData) {
+    <div class="bg-indigo-500 py-1 px-3 shadow-2 flex align-items-center justify-content-between relative lg:static mb-3">
+        <div class="align-items-center flex-grow-1 justify-content-between hidden lg:flex absolute lg:static w-full bg-indigo-500 left-0 top-100 z-1 shadow-2 lg:shadow-none">
+            <ul class="list-none p-0 m-0 flex lg:align-items-center select-none flex-column lg:flex-row">
+                
+                <li>
+                    <a v-ripple class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-indigo-100 hover:text-indigo-50 hover:bg-indigo-600 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline" href="/">
+                        <i class="pi pi-list mr-2"></i>
+                        <span>Publisher List</span>
+                    </a>
+                </li>
+                if data.Key != "" {
+                    <li>
+                        <a v-ripple class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-indigo-100 hover:text-indigo-50 hover:bg-indigo-600 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline" href={ templ.URL("/"+ data.Key +"/series") }>
+                            <i class="pi pi-list mr-2"></i>
+                            <span>Series List</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a v-ripple class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-indigo-100 hover:text-indigo-50 hover:bg-indigo-600 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline" href={ templ.URL("/"+ data.Key +"/series/new") }>
+                            <i class="pi pi-plus mr-2"></i>
+                            <span>New Series</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a v-ripple class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-indigo-100 hover:text-indigo-50 hover:bg-indigo-600 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline" href={ templ.URL("/"+ data.Key +"/seriesimg/1") }>
+                            <i class="pi pi-images mr-2"></i>
+                            <span>Series Images</span>
+                        </a>
+                    </li>
+                    if data.Series != nil {
+                        <li>
+                            <a v-ripple class="flex px-6 p-3 lg:px-3 lg:py-2 align-items-center text-indigo-100 hover:text-indigo-50 hover:bg-indigo-600 font-medium border-round cursor-pointer transition-colors transition-duration-150 p-ripple no-underline" href={ templ.URL("/"+data.Key+"/series/"+data.Series.ID) }>
+                                <i class="pi pi-book mr-2"></i>
+                                <span>{ data.Series.Title }</span>
+                            </a>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+    </div>
+}

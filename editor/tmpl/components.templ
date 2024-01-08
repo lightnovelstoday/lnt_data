@@ -1,0 +1,13 @@
+package tmpl
+
+templ selector(value string, values []string, id string) {
+    <select name={ id } id={ id }>
+        for _, v := range values {
+            if v == value {
+                <option value={ v } selected>{ v }</option>
+            } else {
+                <option value={ v }>{ v }</option>
+            }
+        }
+    </select>
+}

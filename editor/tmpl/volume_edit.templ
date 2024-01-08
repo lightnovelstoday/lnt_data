@@ -1,0 +1,121 @@
+package tmpl
+
+templ VolumeEdit(data ResponseData) {
+    @page("LN.t Series Editor") {
+        @navbar(data)
+        <div class="volume-page">  
+            <form action={ templ.URL("/"+data.Key+"/series/"+data.Series.ID+"/volumes/"+data.Volume.ID) } method="POST">
+                <div class="surface-ground px-1 py-2">
+                    <div class="surface-card p-4 shadow-2 border-round p-fluid">
+                        <h2 class="mb-2 my-1">Volume Data</h2>
+                        <h3 class="mb-2 mx-3 mt-1">Part of { data.Series.Title }</h3>
+                        <div class="grid formgrid p-fluid">
+                            <div class="mb-2 col-10">
+                                <div class="field">
+                                <label for="title">Title</label>
+                                <input type="text" name="title" id="title" value={ data.Volume.Title } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="isbn">Print ISBN</label>
+                                    <input type="text" name="isbn" id="isbn" value={ data.Volume.ISBN } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="print_release">Print Release Date</label>
+                                    <input type="text" name="print_release" id="print_release" value={ data.Volume.PrintRelease } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="digital_isbn">Digital ISBN</label>
+                                    <input type="text" name="digital_isbn" id="digital_isbn" value={ data.Volume.DigitalISBN } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="digital_release">Digital Release Date</label>
+                                    <input type="text" name="digital_release" id="digital_release" value={ data.Volume.DigitalRelease } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-5">
+                                <div class="field">
+                                    <label for="website">Website</label>
+                                    <input type="text" name="website" id="website" value={ data.Volume.Website } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-5">
+                                <div class="field">
+                                    <label for="alt_website">Alternate Website</label>
+                                    <input type="text" name="alt_website" id="alt_website" value={ data.Volume.AltWebsite } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-2">
+                                <div class="field">
+                                    <label for="order">Order</label>
+                                    <input type="text" name="order" id="order" value={ itoa(data.Volume.Order) } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="paperback_asin">Paperback ASIN</label>
+                                    <input type="text" name="paperback_asin" id="paperback_asin" value={ data.Volume.Amazon.PaperbackASIN } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="hardcover_asin">Hardcover ASIN</label>
+                                    <input type="text" name="hardcover_asin" id="hardcover_asin" value={ data.Volume.Amazon.HardcoverASIN } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="digital_asin">Digital ASIN</label>
+                                    <input type="text" name="digital_asin" id="digital_asin" value={ data.Volume.Amazon.DigitalASIN } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-3">
+                                <div class="field">
+                                    <label for="audiobook_asin">Audiobook ASIN</label>
+                                    <input type="text" name="audiobook_asin" id="audiobook_asin" value={ data.Volume.Amazon.AudiobookASIN } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-12">
+                                <div class="field">
+                                    <label for="description">Description</label>
+                                    <textarea name="description" id="description" rows="12">{ data.Volume.Description }</textarea>
+                                </div>
+                            </div>
+                            <div class="mb-2 col-12">
+                                <div class="field">
+                                    <label for="cover_image">Cover Image</label>
+                                    <input type="text" name="cover_image" id="cover_image" value={ data.Volume.CoverImage } />
+                                </div>
+                            </div>
+                            <div class="mb-2 col-6">
+                                <div class="field">
+                                    <label for="print_links">Print Links</label>
+                                    <textarea name="print_links" id="print_links" rows="12">{ linkdata(data.Volume.PrintLinks) }</textarea>
+                                </div>
+                            </div>
+                            <div class="mb-2 col-6">
+                                <div class="field">
+                                    <label for="digital_links">Digital Links</label>
+                                    <textarea name="digital_links" id="digital_links" rows="12">{ linkdata(data.Volume.DigitalLinks)}</textarea>
+                                </div>
+                            </div>
+                            <div class="mb-2 col-12">
+                                <div class="px-3 flex justify-content-between">
+                                    <input type="submit" class="btn btn-primary" value="Update Volume" />
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Delete Volume</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    }
+}
