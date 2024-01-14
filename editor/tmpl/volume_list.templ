@@ -6,14 +6,19 @@ templ VolumeList(data ResponseData) {
         <h1>{ data.Title }</h1>
         <div class="series-list">
             for index, series := range data.SubList {
-                <div class="grid align-items-center h-5rem my-1">
-                    <div class={"col-6", "h-5rem", evenodd(index), "grid", "align-items-center"}>
-                        <img src={ series.LocalImage } class="h-4rem img-fluid" alt={ series.Title } />
-                        <span class={"mx-2", "lnt-tag", "lnt-tag-sm", "w-6rem", "text-white", "bg-"+series.Type }>
-                            { series.Type }</span>
-                        <a class="mx-2" href={ templ.URL("/"+data.Key+"/series/"+series.ID) }>{ series.Title }</a>
+                <div class={"flex", "my-1", evenodd(index)}>
+                    <div class={"col-6", "h-5rem", "grid", "align-items-center"}>
+                        <div>
+                            <img src={ series.LocalImage } class="h-4rem img-fluid" alt={ series.Title } />
+                        </div>
+                        <div>
+                            <a class="mx-2" href={ templ.URL("/"+data.Key+"/series/"+series.ID) }>{ series.Title }</a>
+                            <br />
+                            <span class={"mx-2", "lnt-tag", "lnt-tag-sm", "w-6rem", "text-white", "bg-"+series.Type }>
+                                { series.Type }</span>
+                        </div>
                     </div>
-                    <div class={"col-6", "h-5rem", evenodd(index), "grid", "align-items-center"}>
+                    <div class={"col-6", "grid", "align-items-center"}>
                         <ul>
                             for _, volume := range series.Volumes {
                                 <li>
