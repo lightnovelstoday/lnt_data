@@ -1,0 +1,72 @@
+package tmpl
+
+import "strings"
+
+templ OrphanList(rd ResponseData) {
+    @page("LN.t Orphans for "+rd.Key) {
+        @navbar(rd)
+        <div class="volume-list">
+            <div class="surface-ground px-1 py-2">
+                <div class="surface-card p-4 shadow-2 border-round p-fluid">
+                    <h2 class="mb-2 my-1">Volumes</h2>
+                    for _, volume := range rd.Orphans {
+                        <div class="grid align-items-center h-5rem">
+                            <div class="col-6 grid align-items-center">
+                                if volume.LocalImage != "" {
+                                    <img src={ volume.LocalImage } class="h-4rem img-fluid" alt={ volume.Title } />
+                                } else {
+                                    <img src="/img/unknown.jpg" class="h-4rem img-fluid" alt={ volume.Title } />
+                                }
+                                <span class="pl-2">{ volume.Title }</span>
+                            </div>
+                            <div class="col-2">
+                                <span><a href={ templ.URL(volume.Website) }>Website</a></span>
+                            </div>
+                            <div class="col-3">
+                                <select class="w-full">
+                                    <option value="0">Select a series</option>
+                                    for _, series := range rd.SeriesList {
+                                        if strings.Contains(volume.Title, series.Title) {
+                                            <option value={ series.ID } selected>{ series.Title }</option>
+                                        } else {
+                                            <option value={ series.ID }>{ series.Title }</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-1">
+                                <button class="btn btn-primary btn-sm orphan-move" data-title={ volume.Title }>Move</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var els = document.getElementsByClassName("orphan-move")
+            Array.prototype.forEach.call(els, function (el) {
+                el.addEventListener("click", function (e) {
+                    var title = e.target.dataset.title;
+                    var series = e.target.parentElement.parentElement.getElementsByTagName("select")[0].value;
+                    if (series == 0) {
+                        alert("Please select a series");
+                        return;
+                    }
+                    var data = {
+                        "title": title,
+                        "series": series
+                    };
+                    fetch(document.location.pathname, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(data)
+                    }).then(function (response) {
+                        document.location.reload();
+                    })
+                });
+            });
+        </script>
+    }
+}

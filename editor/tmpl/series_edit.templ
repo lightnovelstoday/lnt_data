@@ -1,6 +1,6 @@
 package tmpl
 
-import 	"github.com/acsellers/ln_shared/data"
+import 	"github.com/lightnovelstoday/lnt_data/data"
 
 templ SeriesEdit(rd ResponseData) {
     @page("LN.t Series Editor") {
@@ -25,7 +25,7 @@ templ seriesVolumeList(rd ResponseData) {
                 
                 for _, volume := range rd.Series.Volumes {
                     <div class="grid align-items-center h-5rem">
-                        <div class="col-8 grid align-items-center">
+                        <div class="col-7 grid align-items-center">
                             if volume.LocalImage != "" {
                                 <img src={ volume.LocalImage } class="h-4rem img-fluid" alt={ volume.Title } />
                             } else {
@@ -40,6 +40,9 @@ templ seriesVolumeList(rd ResponseData) {
                         <div class="col-2">
                             <span>Digital: { volume.DigitalRelease }</span>
                         </div>
+                        <div class="col-1">
+                            <button type="button" class="btn btn-danger delete-volume" data-key={ rd.Key } data-volume={ volume.ID } data-series={ rd.Series.ID }>Delete</button>
+                        </div>
                     </div>
                 }
                 <div class="grid">
@@ -50,6 +53,26 @@ templ seriesVolumeList(rd ResponseData) {
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        var deleteButtons = document.getElementsByClassName("delete-volume")
+        for (var i = 0; i < deleteButtons.length; i++) {
+            deleteButtons[i].addEventListener("click", function(e) {
+                var key = e.target.dataset.key
+                var volumeID = e.target.dataset.volume
+                var seriesID = e.target.dataset.series
+                fetch("/"+key+"/series/" + seriesID + "/volumes/" + volumeID, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }).then(function(response) {
+                    if (response.ok) {
+                        window.location.reload()
+                    }
+                })
+            })
+        }
+    </script>
 }
 templ seriesEditor(series *data.Series, key string) {
     <div class="series-page">  

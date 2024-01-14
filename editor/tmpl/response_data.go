@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/acsellers/ln_shared/data"
+	"github.com/lightnovelstoday/lnt_data/data"
 )
 
 type DataFile struct {
@@ -20,8 +20,11 @@ type ResponseData struct {
 	Files      map[string]*DataFile
 	Key        string
 	SeriesList []data.Series
+	SubList    []data.Series
+	Orphans    []data.Volume
 	Series     *data.Series
 	Volume     *data.Volume
+	Title      string
 	Page       int
 	Total      int
 }

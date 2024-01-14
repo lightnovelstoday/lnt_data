@@ -51,6 +51,7 @@ func main() {
 			Filename: pubFile,
 			Series:   series,
 		}
+		ConsistencyCheck(key)
 	}
 
 	r := chi.NewRouter()
@@ -65,6 +66,10 @@ func main() {
 	r.Post("/{key}/series/", CreateSeriesHandler)
 	r.Post("/{key}/series/{series}", UpdateSeriesHandler)
 	r.Delete("/{key}/series/{series}", DeleteSeriesHandler)
+
+	r.Get("/{key}/orphans", OrphansHandler)
+	r.Post("/{key}/orphans", UpdateOrphanHandler)
+	r.Get("/{key}/low-quality", LowQualityHandler)
 
 	r.Get("/{key}/seriesimg/{page}", SeriesImgHandler)
 
@@ -90,17 +95,103 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		Key:        k,
 		SeriesList: dataFiles[k].Series,
 	}
+	rd.Orphans = GetOrphans(rd.Key)
 	tmpl.SeriesList(rd).Render(r.Context(), w)
 }
 func ImageHandler(w http.ResponseWriter, r *http.Request) {
 	i := chi.URLParam(r, "image")
-	filename := "../ln_images/img/" + i
-	st, _ := os.Stat("output.json")
-	if st != nil {
-		filename = "../" + filename
+	filename := "../lnt_images/build/img/" + i
+	st, _ := os.Stat(filename)
+	if st == nil {
+		filename = "../ln_images/img/" + i
+		st, _ = os.Stat(filename)
+		if st == nil {
+			fmt.Println("Missing Image: ", i)
+			w.WriteHeader(404)
+			w.Write([]byte("Not Found"))
+			return
+		}
 	}
 	http.ServeFile(w, r, filename)
 }
+func OrphansHandler(w http.ResponseWriter, r *http.Request) {
+	k := chi.URLParam(r, "key")
+	rd := tmpl.ResponseData{
+		Files:      dataFiles,
+		Key:        k,
+		SeriesList: dataFiles[k].Series,
+	}
+	rd.Orphans = GetOrphans(rd.Key)
+	tmpl.OrphanList(rd).Render(r.Context(), w)
+}
+
+type updateOrphanPayload struct {
+	Title  string `json:"title"`
+	Series string `json:"series"`
+}
+
+func UpdateOrphanHandler(w http.ResponseWriter, r *http.Request) {
+	key := chi.URLParam(r, "key")
+	payload := updateOrphanPayload{}
+	json.NewDecoder(r.Body).Decode(&payload)
+	SaveOrphan(key, payload.Title, payload.Series)
+	http.Redirect(w, r, fmt.Sprintf("/%s/orphans", key), 302)
+}
+func LowQualityHandler(w http.ResponseWriter, r *http.Request) {
+	k := chi.URLParam(r, "key")
+	rd := tmpl.ResponseData{
+		Files:      dataFiles,
+		Key:        k,
+		SeriesList: dataFiles[k].Series,
+		Title:      "Low Quality Volumes",
+		SubList:    filterLowQualityVolumes(dataFiles[k].Series),
+	}
+	tmpl.VolumeList(rd).Render(r.Context(), w)
+}
+func filterLowQualityVolumes(series []data.Series) []data.Series {
+	filtered := []data.Series{}
+	for _, s := range series {
+		volumes := []data.Volume{}
+		seen := map[string]bool{}
+		for _, v := range s.Volumes {
+			v := v
+			issues := []string{}
+			if seen[v.Title] {
+				issues = append(issues, "Duplicate Title")
+			}
+			seen[v.Title] = true
+			if strings.Contains(v.Title, "(Manga)") {
+				issues = append(issues, "Format in Title")
+			}
+			if strings.Contains(v.Title, "(Light Novel)") {
+				issues = append(issues, "Format in Title")
+			}
+			if v.CoverImage == "" {
+				issues = append(issues, "No Cover Image")
+			}
+			if v.Description == "" {
+				issues = append(issues, "No Description")
+			}
+			if strings.Contains(v.Description, "\u003c") && strings.Contains(v.Description, "\u003e") {
+				issues = append(issues, "HTML in Description")
+			}
+			if v.PrintRelease == "" && v.DigitalRelease == "" {
+				fmt.Println(v.Title, v.PrintRelease, v.DigitalRelease)
+				issues = append(issues, "No Release Date")
+			}
+			if len(issues) > 0 {
+				v.Title += " (" + strings.Join(issues, ", ") + ")"
+				volumes = append(volumes, v)
+			}
+		}
+		if len(volumes) > 0 {
+			s.Volumes = volumes
+			filtered = append(filtered, s)
+		}
+	}
+	return filtered
+}
+
 func SeriesImgHandler(w http.ResponseWriter, r *http.Request) {
 	rd := tmpl.ResponseData{
 		Files: dataFiles,
@@ -238,8 +329,8 @@ func VolumeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	v := chi.URLParam(r, "volume")
-
 	for _, vol := range rd.Series.Volumes {
+		vol := vol
 		if vol.ID == v {
 			rd.Volume = &vol
 		}
@@ -355,7 +446,55 @@ func DeleteVolumeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	series.Volumes = good
 	UpdateSeries(k, series)
-	http.Redirect(w, r, fmt.Sprintf("/%s/series/%s", k, series.ID), 302)
+	http.Redirect(w, r, fmt.Sprintf("/%s/series/%s", k, series.ID), http.StatusSeeOther)
+}
+func GetOrphans(key string) []data.Volume {
+	orphans := []data.Volume{}
+	st, _ := os.Stat(key + "/orphans.json")
+	if st != nil {
+		f, _ := os.Open(key + "/orphans.json")
+		json.NewDecoder(f).Decode(&orphans)
+		f.Close()
+	}
+	return orphans
+}
+func SaveOrphan(key string, title string, series string) {
+	orphans := GetOrphans(key)
+	index := -1
+	for i := range orphans {
+		if orphans[i].Title == title {
+			index = i
+		}
+	}
+	if index >= 0 {
+		orphan := orphans[index]
+		goodMatch := false
+		for i := range dataFiles[key].Series {
+			if dataFiles[key].Series[i].ID == series {
+				orphan.Series = dataFiles[key].Series[i].Slug
+				orphan.SeriesID = dataFiles[key].Series[i].ID
+				dataFiles[key].Series[i].Volumes = append(dataFiles[key].Series[i].Volumes, orphan)
+				goodMatch = true
+			}
+		}
+		if goodMatch {
+			SaveData(key)
+			ReadData(key)
+			DropOrphan(key, index)
+		}
+	}
+}
+func DropOrphan(key string, index int) {
+	orphans := GetOrphans(key)
+	good := []data.Volume{}
+	for i := range orphans {
+		if i != index {
+			good = append(good, orphans[i])
+		}
+	}
+	f, _ := os.Create(key + "/orphans.json")
+	json.NewEncoder(f).Encode(good)
+	f.Close()
 }
 func GetSeries(key, s string) *data.Series {
 	for _, series := range dataFiles[key].Series {
@@ -383,7 +522,25 @@ func InsertSeries(key string, s data.Series) string {
 	ReadData(key)
 	return id
 }
+func ConsistencyCheck(key string) {
+	for i, series := range dataFiles[key].Series {
+		for j, volume := range series.Volumes {
+			if volume.Order == 0 {
+				dataFiles[key].Series[i].Volumes[j].Order = j + 1
+			}
+			if volume.SeriesID == "" {
+				dataFiles[key].Series[i].Volumes[j].SeriesID = series.ID
+				dataFiles[key].Series[i].Volumes[j].Series = series.Slug
+			}
+			if volume.ID == "" {
+				uid, _ := uuid.NewRandom()
+				dataFiles[key].Series[i].Volumes[j].ID = uid.String()
+			}
+		}
+	}
+}
 func SaveData(key string) {
+	ConsistencyCheck(key)
 	dataFile := dataFiles[key].Filename
 	data.OutputData(dataFiles[key].Series, dataFile)
 }

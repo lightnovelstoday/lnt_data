@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/acsellers/ln_shared/data"
 	"github.com/google/uuid"
+	"github.com/lightnovelstoday/lnt_data/data"
 )
 
 var (

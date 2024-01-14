@@ -4,6 +4,10 @@ templ SeriesList(data ResponseData) {
     @page("LN.t Series Editor") {
         @navbar(data)
         <h1>Dashboard</h1>
+        if len(data.Orphans) > 1 {
+            <a href={ templ.URL("/"+ data.Key +"/orphans") } class="btn btn-primary">Orphaned Volumes</a>
+        }
+        <a href={ templ.URL("/"+ data.Key +"/low-quality") } class="btn btn-secondar">Data Quality Issues</a>
         <div class="series-list">
             for index, series := range data.SeriesList {
                 <div class="grid align-items-center h-5rem my-1">
